@@ -1,6 +1,6 @@
 import unittest
 from textnode import TextNode, TextType
-from split_delimiter import split_nodes_delimiter, extract_markdown_images, extract_markdown_links
+from split_delimiter import *
 
 class TestSplitNodesDelimiter(unittest.TestCase):
 
@@ -136,6 +136,143 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         matches = extract_markdown_links(
             "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)")
         self.assertListEqual([("to boot dev", "https://www.boot.dev"), ("to youtube", "https://www.youtube.com/@bootdotdev")], matches)
+    
+    def test_single_image_middle(self):
+        nodes = [TextNode("This is an ![alt](url.png) example", TextType.TEXT)]
+        result = split_nodes_image(nodes)
+        expected = [
+            TextNode("This is an ", TextType.TEXT),
+            TextNode("alt", TextType.IMAGE, "url.png"),
+            TextNode(" example", TextType.TEXT)
+        ]
+        self.assertEqual(result, expected)
+        
+    def test_single_image_only(self):
+        nodes = [TextNode("![pic](img.jpg)", TextType.TEXT)]
+        result = split_nodes_image(nodes)
+        expected = [
+            TextNode("pic", TextType.IMAGE, "img.jpg")
+        ]
+        self.assertEqual(result, expected)
+
+    def test_multiple_images(self):
+        nodes = [TextNode("Here ![one](1.png) and ![two](2.jpg)", TextType.TEXT)]
+        result = split_nodes_image(nodes)
+        expected = [
+            TextNode("Here ", TextType.TEXT),
+            TextNode("one", TextType.IMAGE, "1.png"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("two", TextType.IMAGE, "2.jpg")
+        ]
+        self.assertEqual(result, expected)
+
+    def test_image_at_start(self):
+        nodes = [TextNode("![start](start.jpg) then more text", TextType.TEXT)]
+        result = split_nodes_image(nodes)
+        expected = [
+            TextNode("start", TextType.IMAGE, "start.jpg"),
+            TextNode(" then more text", TextType.TEXT)
+        ]
+        self.assertEqual(result, expected)
+
+    def test_image_at_end(self):
+        nodes = [TextNode("Text before ![end](end.jpg)", TextType.TEXT)]
+        result = split_nodes_image(nodes)
+        expected = [
+            TextNode("Text before ", TextType.TEXT),
+            TextNode("end", TextType.IMAGE, "end.jpg")
+        ]
+        self.assertEqual(result, expected)
+
+    def test_non_text_node_is_untouched(self):
+        node = TextNode("![img](x.png)", TextType.LINK, "https://example.com")
+        result = split_nodes_image([node])
+        self.assertEqual(result, [node])  # Should not split non-TEXT nodes
+
+    def test_malformed_markdown_ignored(self):
+        text = "Broken image ![no close paren](url.jpg"
+        result = split_nodes_image([TextNode(text, TextType.TEXT)])
+        expected = [TextNode(text, TextType.TEXT)]
+        self.assertEqual(result, expected)
+
+    def test_no_image_markdown(self):
+        text = "No images here"
+        result = split_nodes_image([TextNode(text, TextType.TEXT)])
+        expected = [TextNode(text, TextType.TEXT)]
+        self.assertEqual(result, expected)
+        
+    def test_single_link_middle(self):
+        nodes = [TextNode("Click [here](https://example.com) now", TextType.TEXT)]
+        result = split_nodes_link(nodes)
+        expected = [
+            TextNode("Click ", TextType.TEXT),
+            TextNode("here", TextType.LINK, "https://example.com"),
+            TextNode(" now", TextType.TEXT)
+        ]
+        self.assertEqual(result, expected)
+
+    def test_single_link_only(self):
+        nodes = [TextNode("[link](https://a.com)", TextType.TEXT)]
+        result = split_nodes_link(nodes)
+        expected = [TextNode("link", TextType.LINK, "https://a.com")]
+        self.assertEqual(result, expected)
+
+    def test_multiple_links(self):
+        nodes = [TextNode("Go to [Google](https://google.com) or [OpenAI](https://openai.com)", TextType.TEXT)]
+        result = split_nodes_link(nodes)
+        expected = [
+            TextNode("Go to ", TextType.TEXT),
+            TextNode("Google", TextType.LINK, "https://google.com"),
+            TextNode(" or ", TextType.TEXT),
+            TextNode("OpenAI", TextType.LINK, "https://openai.com")
+        ]
+        self.assertEqual(result, expected)
+
+    def test_link_at_start(self):
+        nodes = [TextNode("[Start](start.com) of sentence", TextType.TEXT)]
+        result = split_nodes_link(nodes)
+        expected = [
+            TextNode("Start", TextType.LINK, "start.com"),
+            TextNode(" of sentence", TextType.TEXT)
+        ]
+        self.assertEqual(result, expected)
+
+    def test_link_at_end(self):
+        nodes = [TextNode("Go here [end](end.com)", TextType.TEXT)]
+        result = split_nodes_link(nodes)
+        expected = [
+            TextNode("Go here ", TextType.TEXT),
+            TextNode("end", TextType.LINK, "end.com")
+        ]
+        self.assertEqual(result, expected)
+
+    def test_non_text_node_untouched(self):
+        node = TextNode("[link](x.com)", TextType.ITALIC)
+        result = split_nodes_link([node])
+        self.assertEqual(result, [node])  # Non-TEXT nodes should be returned unchanged
+
+    def test_malformed_link_not_matched(self):
+        nodes = [TextNode("Broken [link](missing", TextType.TEXT)]
+        result = split_nodes_link(nodes)
+        expected = [TextNode("Broken [link](missing", TextType.TEXT)]
+        self.assertEqual(result, expected)
+
+    def test_no_links(self):
+        nodes = [TextNode("Just plain text.", TextType.TEXT)]
+        result = split_nodes_link(nodes)
+        expected = [TextNode("Just plain text.", TextType.TEXT)]
+        self.assertEqual(result, expected)
+
+    def test_link_with_text_before_and_after(self):
+        nodes = [TextNode("Intro [link](link.com) outro", TextType.TEXT)]
+        result = split_nodes_link(nodes)
+        expected = [
+            TextNode("Intro ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "link.com"),
+            TextNode(" outro", TextType.TEXT)
+        ]
+        self.assertEqual(result, expected)
+
         
 if __name__ == "__main__":
     unittest.main()
