@@ -2,7 +2,7 @@ import os
 import shutil
 
 #copies files from src directory to dest dir
-def copy_static_to_public():
+def copy_static_to_docs():
     #gets the absolut path of working this file's directory
     current_dir = os.path.dirname(__file__)
     print(current_dir)
@@ -11,7 +11,7 @@ def copy_static_to_public():
     
     #creates variables of source and destination directories
     src = os.path.join(parent_dir, "static")
-    dest = os.path.join(parent_dir, "public")
+    dest = os.path.join(parent_dir, "docs")
     
     #deletes destination folder if it exists then creates it
     if os.path.exists(dest):
