@@ -38,5 +38,28 @@ def generate_page(from_path, template_path, dest_path):
     with open(dest_path, "w") as html_file:
         html_file.write(html_page)
         
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    dir_content = os.listdir(dir_path_content)
+    for item in dir_content:
+        #checks if item in list is a markdown file
+        if item.endswith(".md"):
+            #creates the original and destination file paths
+            original_file_path = os.path.join(dir_path_content, item)
+            copied_file_path = os.path.join(dest_dir_path, 
+                                            f"{os.path.splitext(item)[0]}.html")
+            
+            #generates the page of the markdown file
+            generate_page(original_file_path, template_path,copied_file_path)
         
+        elif os.path.isdir(os.path.join(dir_path_content, item)):
+            #saves new paths for subfolder as variables
+            new_dir_path = os.path.join(dir_path_content, item)
+            new_dest_path = os.path.join(dest_dir_path, item)
+            
+            #creates new destination subfolder if it doesn't exist already
+            os.makedirs(new_dest_path, exist_ok = True)
+            generate_pages_recursive(new_dir_path, template_path, new_dest_path)
+            
+            
+    
 extract_title("\n # Hello")
