@@ -273,6 +273,54 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         ]
         self.assertEqual(result, expected)
 
+    # test block conversion
+    
+    class TestMarkdownToBlocks(unittest.TestCase):
+
+        def test_single_block(self):
+            self.assertEqual(markdown_to_blocks("Just one block."), ["Just one block."])
+
+        def test_two_blocks(self):
+            md = "First block.\n\nSecond block."
+            expected = ["First block.", "Second block."]
+            self.assertEqual(markdown_to_blocks(md), expected)
+
+        def test_three_blocks_triple_newlines(self):
+            md = "Block one.\n\n\nBlock two.\n\n\nBlock three."
+            expected = ["Block one.", "Block two.", "Block three."]
+            self.assertEqual(markdown_to_blocks(md), expected)
+
+        def test_blank_lines_with_spaces(self):
+            md = "Block A.\n \n\t\nBlock B."
+            expected = ["Block A.", "Block B."]
+            self.assertEqual(markdown_to_blocks(md), expected)
+
+        def test_internal_line_breaks(self):
+            md = "Line 1\nLine 2\n\nNext block"
+            expected = ["Line 1\nLine 2", "Next block"]
+            self.assertEqual(markdown_to_blocks(md), expected)
+
+        def test_leading_and_trailing_whitespace(self):
+            md = "   Trim me   \n\n  Me too  "
+            expected = ["Trim me", "Me too"]
+            self.assertEqual(markdown_to_blocks(md), expected)
+
+        def test_empty_input(self):
+            self.assertEqual(markdown_to_blocks(""), [])
+
+        def test_only_blank_lines(self):
+            md = "\n\n   \n\n"
+            self.assertEqual(markdown_to_blocks(md), [])
+
+        def test_one_real_block_between_blanks(self):
+            md = "  \n\n  Real content  \n\n   "
+            expected = ["Real content"]
+            self.assertEqual(markdown_to_blocks(md), expected)
+
+        def test_markdown_style_content(self):
+            md = "# Heading\n\n- Bullet 1\n- Bullet 2\n\nFinal paragraph."
+            expected = ["# Heading", "- Bullet 1\n- Bullet 2", "Final paragraph."]
+            self.assertEqual(markdown_to_blocks(md), expected)
         
 if __name__ == "__main__":
     unittest.main()

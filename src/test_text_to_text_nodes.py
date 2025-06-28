@@ -11,7 +11,7 @@ class TestTextToTextNodes(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_bold_and_italic(self):
-        result = text_to_text_nodes("This is **bold** and *italic*.")
+        result = text_to_text_nodes("This is **bold** and _italic_.")
         expected = [
             TextNode("This is ", TextType.TEXT),
             TextNode("bold", TextType.BOLD),
@@ -41,7 +41,7 @@ class TestTextToTextNodes(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_nested_styles_sequential(self):
-        result = text_to_text_nodes("**bold** *italic* `code`")
+        result = text_to_text_nodes("**bold** _italic_ `code`")
         expected = [
             TextNode("bold", TextType.BOLD),
             TextNode(" ", TextType.TEXT),
@@ -52,7 +52,7 @@ class TestTextToTextNodes(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_mixed_markdown(self):
-        result = text_to_text_nodes("A *mix* of [things](url.com) and ![img](pic.jpg).")
+        result = text_to_text_nodes("A _mix_ of [things](url.com) and ![img](pic.jpg).")
         expected = [
             TextNode("A ", TextType.TEXT),
             TextNode("mix", TextType.ITALIC),

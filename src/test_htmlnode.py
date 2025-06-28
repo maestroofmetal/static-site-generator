@@ -120,10 +120,6 @@ class TestHTMLNode(unittest.TestCase):
         with self.assertRaises(ValueError):
             ParentNode(None, [child]).to_html()
 
-    def test_parent_node_without_children_raises_error(self):
-        with self.assertRaises(ValueError):
-            ParentNode("div", []).to_html()
-
     def test_parent_node_with_none_children_raises_error(self):
         with self.assertRaises(ValueError):
             ParentNode("div", None).to_html()
