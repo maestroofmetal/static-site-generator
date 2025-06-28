@@ -19,4 +19,4 @@ def copy_static_to_docs():
         shutil.rmtree(dest)
     print(f"Copying {src}/ to new directory {dest}/")
     shutil.copytree(src, dest) #recursively copies an entire directory rooted at src to dest
-    print("Files succesfully copied!")
+    print("Files successfully copied!")
